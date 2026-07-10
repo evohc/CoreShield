@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "console",
+    "test/spinner",
+    "test/intruder",
+]
+resolver = "2"
