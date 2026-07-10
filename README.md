@@ -63,11 +63,11 @@ Standard parameter configurations (`isolcpus=5`, `nohz_full=5`, `rcu_nocbs=5`) w
 
 The 1.33 Hz soft irq and 1.91 Hz hard irq metrics represent the physical baseline limit imposed by the paravirtualized architecture. While the hard irqs are a direct hypervisor 'tax', consisting of a steady-state clock synchronization heartbeat injected every ~500ms from the physical Hyper-V host via the VMCS—the soft irqs represent the minor, unavoidable deferred kernel housekeeping triggered in their wake. This proves that while the local OS scheduler can be tamed from user-space, virtualization forces an architectural baseline noise floor that cannot be bypassed by software optimization alone.
 
-From this 60-second baseline test, we can calculate the exact profile of time stolen from the spinner by the hypervisor layer. Assuming a conservative kernel interrupt handling and eBPF processing duration of 3\,\mu\text{s} per event:
+From this 60-second baseline test, we can calculate the exact profile of time stolen from the spinner by the hypervisor layer. Assuming a conservative kernel interrupt handling and eBPF processing duration of 3μs per event:
 
 $$195 \text{ interruptions} \times 3\,\mu\text{s} = 585\,\mu\text{s} \text{ total stolen time}$$
 
-Over the course of a full 60-second run (60,000,000\,\mu\text{s}), the hypervisor and kernel combined stole a total of 585 microseconds from the spinner. This proves that even under virtualization constraints, our optimized baseline limits stolen CPU time to just 0.000975% ($\frac{585\,\mu\text{s}}{60,000,000\,\mu\text{s}} \times 100$), ensuring the spinner maintains 99.999% absolute hardware ownership over the test window.
+Over the course of a full 60-second run (60,000,000μs), the hypervisor and kernel combined stole a total of 585 microseconds from the spinner. This proves that even under virtualization constraints, our optimized baseline limits stolen CPU time to just 0.000975% ($\frac{585\,\mu\text{s}}{60,000,000\,\mu\text{s}} \times 100$), ensuring the spinner maintains 99.999% absolute hardware ownership over the test window.
 
 ### Scenario 2: Unshielded (monitor)
 ```
@@ -95,7 +95,7 @@ While native kernel-level isolation parameters successfully shield a dedicated C
 
 This collapse of thread residency triggered a 1,200% surge in soft irqs to handle deferred virtual memory system call overhead. The intense I/O and memory pressure forced the kernel to break its own isolation boundaries, waking up its high-priority internal helper thread—`kworker/5:1H`—which logged 15,752 context switches on Core 5 to process page allocations and hardware-state transitions in kernel-space. Furthermore, because multiple tasks were now actively competing for execution slots, the kernel immediately deactivated adaptive-tickless mode, forcing a large 286x spike in hard irqs (32,927 hits) to drive the scheduling timer tick.
 
-We use the same conservative estimate of 3\,\mu\text{s} of CPU overhead per hardware and software interrupt event. However, we must also account for the context switches. A context switch on a modern x86_64 processor running under a hypervisor involves saving/restoring CPU registers, shifting page tables, and handling scheduler logic. This is significantly more expensive than a simple interrupt hook, costing roughly 5\,\mu\text{s} of direct overhead (not including the massive indirect latency penalty of destroying L1/L2 cache locality).
+We use the same conservative estimate of 3μs of CPU overhead per hardware and software interrupt event. However, we must also account for the context switches. A context switch on a modern x86_64 processor running under a hypervisor involves saving/restoring CPU registers, shifting page tables, and handling scheduler logic. This is significantly more expensive than a simple interrupt hook, costing roughly 5μs of direct overhead (not including the massive indirect latency penalty of destroying L1/L2 cache locality).
 
 -   **Soft IRQs:** $1,037 \text{ hits} \times 3\,\mu\text{s} = 3,111\,\mu\text{s}$
     
