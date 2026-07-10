@@ -18,7 +18,7 @@ Under this paravirtualized architecture, hypervisor jitter manifests primarily a
     
 -   **HYP** (Hypervisor Asynchronous Callbacks)
     
-`scx-shield` hooks directly into the guest kernel's low-level execution tracepoints via dual eBPF modules to capture real-time core jitter metrics and actively enforce thread residency.
+`core-shield` hooks directly into the guest kernel's low-level execution tracepoints via dual eBPF modules to capture real-time core jitter metrics and actively enforce thread residency.
 A common misconception is that native Linux boot parameters provide an impenetrable boundary for dedicated tasks. The kernel utilizes standard administrative optimizations, including:
 
 -   `isolcpus` – Removes a core from the pool of CPUs used for automated, asynchronous OS load balancing.
@@ -132,7 +132,7 @@ By stripping Core 5 from their targeted CPU bitmasks in-flight, the entire wave 
     
 -   Once an "intruder" penetrates the boundary, the kernel strips out adaptive-tickless optimization (`nohz_full`), reactivating high-frequency scheduler hardware clock interrupts and pulling in internal helper threads like `kworker`.
     
--   Implementing an active eBPF syscall interceptor allows the system to enforce an active gateway policy. By scrubbing target bitmasks in kernel-space before the scheduler processes them, `scx-shield` establishes an ironclad barrier, keeping core execution perfectly quiet and optimized even inside unstable, multi-tenant virtualized environments. _Note: The actual implementation here intercepts the global syscall entry vector due to structural limitations encountered with specific tracepoint context matching inside the eBPF verifier._
+-   Implementing an active eBPF syscall interceptor allows the system to enforce an active gateway policy. By scrubbing target bitmasks in kernel-space before the scheduler processes them, `core-shield` establishes an ironclad barrier, keeping core execution perfectly quiet and optimized even inside unstable, multi-tenant virtualized environments. _Note: The actual implementation here intercepts the global syscall entry vector due to structural limitations encountered with specific tracepoint context matching inside the eBPF verifier._
 
 > Demos are included in /assets.    
 
